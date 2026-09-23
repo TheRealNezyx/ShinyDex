@@ -1,0 +1,57 @@
+# detekt configuration for ShinyDex (SAST layer).
+# Only deltas from the default config are listed; buildUponDefaultConfig = true in Gradle.
+build:
+  maxIssues: 0
+
+complexity:
+  LongMethod:
+    active: true
+    threshold: 120
+    # Composable functions are declarative UI trees, not procedural logic.
+    ignoreAnnotated: ['Composable']
+  CyclomaticComplexMethod:
+    active: true
+    threshold: 15
+    # A Composable's branches are UI states (loading, empty, error...), not logic paths.
+    ignoreAnnotated: ['Composable']
+  LongParameterList:
+    active: true
+    functionThreshold: 9
+    constructorThreshold: 9
+    ignoreAnnotated: ['Composable']
+  TooManyFunctions:
+    active: true
+    thresholdInFiles: 25
+    thresholdInClasses: 25
+
+naming:
+  FunctionNaming:
+    active: true
+    ignoreAnnotated: ['Composable']
+  TopLevelPropertyNaming:
+    active: false
+
+style:
+  MagicNumber:
+    active: true
+    ignoreAnnotated: ['Composable']
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreEnums: true
+    ignoreNumbers: ['-1', '0', '1', '2', '100']
+  MaxLineLength:
+    active: true
+    maxLineLength: 110
+  UnusedPrivateMember:
+    active: true
+  ForbiddenComment:
+    active: true
+    comments:
+      - reason: 'Unfinished work must not ship.'
+        value: 'FIXME:'
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: true
+  SwallowedException:
+    active: true
