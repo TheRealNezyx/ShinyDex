@@ -63,6 +63,9 @@ one-generation-one-dex rule. Adding a generation means one new entry in
 
 ## Face-off (multiplayer)
 
+> Para jugar con tus compañeros, la guía en español está en
+> [docs/COMO-JUGAR.md](docs/COMO-JUGAR.md).
+
 One player creates a room and shares its six-character code (or the `shinydex://join/CODE`
 link from the share button). Anyone with the code joins from the **Face-off** tab. Rooms hold
 up to 8 hunters and stay in one generation.
