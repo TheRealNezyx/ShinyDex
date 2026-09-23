@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  DEBUG BUILDS ONLY. This file overrides src/main/res/xml/network_security_config.xml.
+
+  The face-off server runs on a laptop during development (10.0.2.2 from the emulator, or a
+  192.168.x.x LAN address from a phone), and those hosts speak plain HTTP. Release builds do
+  not include this file, so they keep the HTTPS-only policy and need a TLS-fronted server.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
