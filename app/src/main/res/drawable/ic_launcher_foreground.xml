@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Classic Poke Ball silhouette rendered in the ShinyDex palette: gold / black / white. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Upper hemisphere: gold -->
+    <path
+        android:fillColor="#D4AF37"
+        android:pathData="M24,54 A30,30 0 0 1 84,54 Z" />
+
+    <!-- Lower hemisphere: white -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M84,54 A30,30 0 0 1 24,54 Z" />
+
+    <!-- Equatorial band -->
+    <path
+        android:fillColor="#0A0A0B"
+        android:pathData="M24.6,50 H83.4 V58 H24.6 Z" />
+
+    <!-- Outer rim -->
+    <path
+        android:strokeColor="#0A0A0B"
+        android:strokeWidth="4"
+        android:fillColor="#00000000"
+        android:pathData="M54,24 A30,30 0 1 1 53.9,24 Z" />
+
+    <!-- Centre button: black ring, white face, gold core -->
+    <path
+        android:fillColor="#0A0A0B"
+        android:pathData="M54,42 A12,12 0 1 1 53.9,42 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,45.5 A8.5,8.5 0 1 1 53.9,45.5 Z" />
+    <path
+        android:fillColor="#D4AF37"
+        android:pathData="M54,49.5 A4.5,4.5 0 1 1 53.9,49.5 Z" />
+</vector>

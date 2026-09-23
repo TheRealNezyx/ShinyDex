@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ink">#FF0A0A0B</color>
+    <color name="ink_soft">#FF16161A</color>
+    <color name="gold">#FFD4AF37</color>
+    <color name="gold_bright">#FFF2C94C</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="ic_launcher_background">#FF0A0A0B</color>
+</resources>
