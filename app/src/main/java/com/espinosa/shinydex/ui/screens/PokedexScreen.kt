@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -28,6 +30,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -45,6 +48,7 @@ import com.espinosa.shinydex.ui.theme.InkLine
 import com.espinosa.shinydex.ui.theme.InkSoft
 import com.espinosa.shinydex.ui.theme.Muted
 import com.espinosa.shinydex.ui.viewmodel.DetailState
+import com.espinosa.shinydex.util.DexEntry
 import java.util.Locale
 
 /** The Pokedex for the selected generation, with a normal / shiny sprite toggle. */
@@ -187,7 +191,9 @@ private fun PokedexDetailDialog(
             modifier = Modifier.border(1.dp, Gold.copy(alpha = 0.5f), RoundedCornerShape(20.dp)),
         ) {
             Column(
-                modifier = Modifier.padding(20.dp),
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
@@ -243,7 +249,11 @@ private fun PokedexDetailDialog(
                             style = MaterialTheme.typography.bodySmall,
                             color = Muted,
                         )
-                        Spacer(Modifier.height(10.dp))
+                        Spacer(Modifier.height(12.dp))
+                        DexEntryCard(detail.detail.dexEntry)
+                        Spacer(Modifier.height(12.dp))
+                        SectionLabel("Base stats")
+                        Spacer(Modifier.height(4.dp))
                         detail.detail.stats.forEach { (name, value) ->
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -270,6 +280,27 @@ private fun PokedexDetailDialog(
                 }
             }
         }
+    }
+}
+
+/** The in-game Pokedex text, labelled with the game it comes from. */
+@Composable
+private fun DexEntryCard(entry: DexEntry?) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(InkCard, RoundedCornerShape(12.dp))
+            .border(1.dp, Gold.copy(alpha = BORDER_ALPHA), RoundedCornerShape(12.dp))
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+    ) {
+        SectionLabel(entry?.let { "Pokédex · ${it.game.displayName}" } ?: "Pokédex")
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = entry?.text ?: "No Pokédex entry available for this game right now.",
+            style = MaterialTheme.typography.bodySmall,
+            fontStyle = if (entry == null) FontStyle.Normal else FontStyle.Italic,
+            color = if (entry == null) Muted else Bone,
+        )
     }
 }
 

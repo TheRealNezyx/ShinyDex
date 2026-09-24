@@ -2,6 +2,7 @@ package com.espinosa.shinydex.data.remote
 
 import com.espinosa.shinydex.data.remote.dto.PokemonDetailResponse
 import com.espinosa.shinydex.data.remote.dto.PokemonListResponse
+import com.espinosa.shinydex.data.remote.dto.PokemonSpeciesResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -17,4 +18,7 @@ interface PokeApiService {
 
     @GET("pokemon/{id}")
     suspend fun getPokemon(@Path("id") id: Int): PokemonDetailResponse
+
+    @GET("pokemon-species/{id}")
+    suspend fun getSpecies(@Path("id") id: Int): PokemonSpeciesResponse
 }

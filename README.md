@@ -55,7 +55,8 @@ one-generation-one-dex rule. Adding a generation means one new entry in
   numbers that matter (1,000 · 4,096 · **8,192** · 10,000 …).
 - **Pokédex** — the selected generation's own species, pulled from [PokéAPI](https://pokeapi.co), with a
   **shiny toggle** that swaps every sprite between normal and shiny. Tap an entry for its
-  types, height, weight, base stats, and the normal and shiny artwork side by side.
+  types, height, weight, base stats, the in-game Pokédex entry from that generation's game
+  (Crystal, Emerald or Platinum), and the normal and shiny artwork side by side.
 - **Face-off** — hunt with friends in real time: a **Battle** (same Pokémon, first shiny
   wins) or a **Lounge** (everyone hunts their own). See [Face-off](#face-off-multiplayer).
 - **Works offline** — the dex is cached in Room after the first load; solo hunts never need
@@ -200,10 +201,10 @@ The APK lands in `app/build/outputs/apk/debug/app-debug.apk`.
 gradlew :app:testDebugUnitTest :server:test
 ```
 
-**54 tests.** The server's 20 cover the face-off rules (one winner per battle, lounge closes
+**60 tests.** The server's 20 cover the face-off rules (one winner per battle, lounge closes
 only when everyone is done, tokens, generation checks, caps, expiry) and the HTTP API end to
-end. The app's 34 cover the shiny probability maths, the milestone logic, the dex ranges and
-sprite eras, and the method/generation rules — including that the Odd Egg is Crystal-only,
+end. The app's 40 cover the shiny probability maths, the milestone logic, the dex ranges and
+sprite eras, which game's Pokédex entry is shown and how its text is cleaned, and the method/generation rules — including that the Odd Egg is Crystal-only,
 that no method leaks into another generation, and that Gen III really has nothing that
 beats full odds — plus room codes, invite links and the pooled battle probability.
 

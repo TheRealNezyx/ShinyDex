@@ -36,3 +36,14 @@ data class StatSlot(
     @SerializedName("base_stat") val baseStat: Int = 0,
     @SerializedName("stat") val stat: NamedResource = NamedResource(),
 )
+
+/** `GET /pokemon-species/{id}` -- only the Pokedex text, from every game and language. */
+data class PokemonSpeciesResponse(
+    @SerializedName("flavor_text_entries") val flavorTextEntries: List<FlavorTextEntry> = emptyList(),
+)
+
+data class FlavorTextEntry(
+    @SerializedName("flavor_text") val flavorText: String = "",
+    @SerializedName("language") val language: NamedResource = NamedResource(),
+    @SerializedName("version") val version: NamedResource = NamedResource(),
+)

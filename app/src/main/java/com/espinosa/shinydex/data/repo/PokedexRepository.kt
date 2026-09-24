@@ -6,6 +6,10 @@ import com.espinosa.shinydex.data.model.Generation
 import com.espinosa.shinydex.data.model.PokemonDetail
 import com.espinosa.shinydex.data.model.PokemonSummary
 import com.espinosa.shinydex.data.remote.PokeApiService
+import com.espinosa.shinydex.util.DexEntries
+import com.espinosa.shinydex.util.RawDexEntry
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -42,15 +46,26 @@ class PokedexRepository(
         dao.insertAll(entries)
     }
 
+    /**
+     * Stats and the Pokedex entry, fetched in parallel. The entry is a bonus: if its call
+     * fails the stats still show, with the entry left empty.
+     */
     suspend fun detail(id: Int): Result<PokemonDetail> = runCatching {
-        val dto = api.getPokemon(id)
-        PokemonDetail(
-            id = dto.id,
-            types = dto.types.sortedBy { it.slot }.map { it.type.name },
-            heightMetres = dto.height / DECIMETRES_PER_METRE,
-            weightKilograms = dto.weight / HECTOGRAMS_PER_KILOGRAM,
-            stats = dto.stats.map { it.stat.name to it.baseStat },
-        )
+        coroutineScope {
+            val species = async { runCatching { api.getSpecies(id) }.getOrNull() }
+            val dto = api.getPokemon(id)
+            val entries = species.await()?.flavorTextEntries.orEmpty().map {
+                RawDexEntry(text = it.flavorText, language = it.language.name, version = it.version.name)
+            }
+            PokemonDetail(
+                id = dto.id,
+                types = dto.types.sortedBy { it.slot }.map { it.type.name },
+                heightMetres = dto.height / DECIMETRES_PER_METRE,
+                weightKilograms = dto.weight / HECTOGRAMS_PER_KILOGRAM,
+                stats = dto.stats.map { it.stat.name to it.baseStat },
+                dexEntry = DexEntries.pick(entries, Generation.ofDexNumber(id)),
+            )
+        }
     }
 
     private companion object {
