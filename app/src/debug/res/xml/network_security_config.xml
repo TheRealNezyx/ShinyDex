@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  DEBUG BUILDS ONLY. This file overrides src/main/res/xml/network_security_config.xml.
+  SOLO VERSIONES DE PRUEBA. Este archivo reemplaza a src/main/res/xml/network_security_config.xml.
 
-  The face-off server runs on a laptop during development (10.0.2.2 from the emulator, or a
-  192.168.x.x LAN address from a phone), and those hosts speak plain HTTP. Release builds do
-  not include this file, so they keep the HTTPS-only policy and need a TLS-fronted server.
+  Durante el desarrollo el servidor de Face-off corre en una computadora de la red local y
+  habla HTTP sin cifrar. La versión final no incluye este archivo, así que mantiene la
+  política de solo HTTPS y necesita un servidor con TLS.
 -->
 <network-security-config>
     <base-config cleartextTrafficPermitted="true">

@@ -1,12 +1,12 @@
-// Software Composition Analysis (SCA) for ShinyDex.
+// Análisis de composición de software (SCA) de ShinyDex.
 //
-// Kept out of the normal build on purpose: OWASP Dependency-Check downloads the National
-// Vulnerability Database on first run, which is slow and needs an NVD API key. Enable it
-// explicitly when you want it:
+// Queda fuera del build normal a propósito: OWASP Dependency-Check descarga la National
+// Vulnerability Database la primera vez, lo que es lento y requiere una llave de la NVD.
+// Se activa explícitamente:
 //
-//   gradlew -PenableSca=true -PnvdApiKey=YOUR_KEY :app:dependencyCheckAnalyze
+//   gradlew -PenableSca=true -PnvdApiKey=TU_LLAVE :app:dependencyCheckAnalyze
 //
-// The HTML/JSON report lands in app/build/reports/dependency-check-report.*
+// El reporte HTML/JSON queda en app/build/reports/dependency-check-report.*
 
 buildscript {
     repositories {
@@ -23,7 +23,7 @@ apply(plugin = "org.owasp.dependencycheck")
 extensions.configure<org.owasp.dependencycheck.gradle.extension.DependencyCheckExtension>(
     "dependencyCheck",
 ) {
-    // Fail the build on High severity (CVSS >= 7.0) or worse.
+    // Falla el build con severidad alta (CVSS >= 7.0) o peor.
     failBuildOnCVSS = 7.0f
     formats = listOf("HTML", "JSON")
     scanConfigurations = listOf("releaseRuntimeClasspath")

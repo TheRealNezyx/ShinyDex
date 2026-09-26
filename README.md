@@ -1,266 +1,236 @@
 # ShinyDex
 
-A shiny-hunt tracker for Android covering **Generations II, III and IV**, written in
-Kotlin with Jetpack Compose. Black, gold and white, with a Poké Ball for a logo.
+Rastreador de cazas shiny para Android que cubre las **generaciones II, III y IV**, hecho en
+Kotlin con Jetpack Compose. Negro, dorado y blanco, con una Poké Ball como logo.
 
-> **Status: version 0.1.0 — usable, not final.** Builds, installs and runs; the whole flow
-> has been exercised on an API 36 emulator. See [Roadmap](#roadmap) for what is still open.
+> **Estado: versión 0.1.0, usable pero no final.** Compila, se instala y funciona; el flujo
+> completo se probó en un emulador con Android 16 (API 36). Lo pendiente está en
+> [Limitaciones y mejoras](#limitaciones-y-mejoras).
 
 ---
 
-## One generation at a time
+## Una generación a la vez
 
-Picking a generation scopes the **whole app** to that region — its species, its games, its
-methods and its sprite era. Pick Hoenn and you see Hoenn: #252–386 in Emerald sprites, with
-Ruby / Sapphire / Emerald and only the methods those games have.
+Al elegir una generación, **toda la app** se limita a esa región: sus Pokémon, sus juegos, sus
+métodos y el estilo de sus sprites. Si eliges Hoenn, ves Hoenn: del #252 al #386 con sprites de
+Emerald, los juegos Ruby / Sapphire / Emerald y solo los métodos que existen en ellos.
 
-| Generation | Region | Dex | Games | Sprites |
+| Generación | Región | Pokédex | Juegos | Sprites |
 |---|---|---|---|---|
 | **II** | Johto | #152–251 (100) | Gold · Silver · Crystal | Crystal |
 | **III** | Hoenn | #252–386 (135) | Ruby · Sapphire · Emerald | Emerald |
 | **IV** | Sinnoh | #387–493 (107) | Diamond · Pearl · Platinum | Platinum |
 
-**Generation I is locked on purpose:** shiny Pokémon did not exist in Red, Blue and Yellow,
-so there is nothing to hunt there.
+**La generación I está bloqueada a propósito:** en Red, Blue y Yellow no existían los Pokémon
+shiny, así que no hay nada que cazar.
 
-Only games whose dex matches their own region are listed. FireRed, LeafGreen, HeartGold and
-SoulSilver are remakes carrying an earlier region's dex, so including them would break the
-one-generation-one-dex rule. Adding a generation means one new entry in
-`data/model/Generation.kt`, its games in `GameVersion.kt` and its methods in
-`HuntMethod.kt`.
+Solo se incluyen los juegos cuya Pokédex es la de su propia región. FireRed, LeafGreen,
+HeartGold y SoulSilver son remakes con la Pokédex de otra región, así que romperían la regla de
+una generación, una Pokédex.
 
-## Screenshots
+## Capturas
 
-| Generation select | My hunts | Hunt detail |
+| Elegir generación | Mis cazas | Detalle de una caza |
 |---|---|---|
 | ![](docs/screenshots/01-generation-select.png) | ![](docs/screenshots/02-hunts.png) | ![](docs/screenshots/03-hunt-detail.png) |
 
-| Milestone message | Pokedex (shiny on) | New hunt |
+| Mensaje de Milestone | Pokédex (shiny activado) | Nueva caza |
 |---|---|---|
 | ![](docs/screenshots/04-milestone.png) | ![](docs/screenshots/05-pokedex-shiny.png) | ![](docs/screenshots/06-new-hunt.png) |
 
-*Captured on an API 36 emulator, version 0.1.0.*
+*Capturadas en un emulador con API 36, versión 0.1.0.*
 
-## Features
+## Funciones
 
-- **Generation select** — Gen II, III or IV; Gen I stays locked. Your choice scopes the whole
-  app and is remembered; "CHANGE" in the top bar brings the screen back.
-- **My hunts** — every hunt is a card with the shiny sprite, the game, the method, a live
-  counter and **+ / −** buttons right on the card. A summary strip totals active hunts,
-  found shinies and lifetime encounters.
-- **Hunt detail** — a large counter with −10 / −1 / +1 / +10, the method's real odds, the
-  cumulative "chance by now" probability, a progress bar towards one full-odds cycle, and
-  an explanation of how that hunting method actually works in GSC.
-- **Motivational messages** — a pop-up every 100 encounters, with special messages for the
-  numbers that matter (1,000 · 4,096 · **8,192** · 10,000 …).
-- **Pokédex** — the selected generation's own species, pulled from [PokéAPI](https://pokeapi.co), with a
-  **shiny toggle** that swaps every sprite between normal and shiny. Tap an entry for its
-  types, height, weight, base stats, the in-game Pokédex entry from that generation's game
-  (Crystal, Emerald or Platinum), and the normal and shiny artwork side by side.
-- **Face-off** — hunt with friends in real time: a **Battle** (same Pokémon, first shiny
-  wins) or a **Lounge** (everyone hunts their own). See [Face-off](#face-off-multiplayer).
-- **Works offline** — the dex is cached in Room after the first load; solo hunts never need
-  the network at all.
+- **Elegir generación:** Gen II, III o IV; la Gen I sigue bloqueada. La elección limita toda la
+  app y se recuerda; “CHANGE” en la barra de arriba regresa a esa pantalla.
+- **Mis cazas:** cada caza es una tarjeta con el sprite shiny, el juego, el método, el contador
+  y botones **+ / −** directamente en la tarjeta. Arriba, un resumen suma las cazas activas, los
+  shinies encontrados y los encuentros totales.
+- **Detalle de una caza:** contador grande con −10 / −1 / +1 / +10, la probabilidad real del
+  método, la probabilidad acumulada (“chance by now”), una barra de progreso hacia un ciclo
+  completo de probabilidad y una explicación de cómo funciona ese método en el juego.
+- **Mensajes de ánimo (Milestones):** aparecen cada 100 encuentros, con mensajes especiales en
+  los números importantes (1,000 · 4,096 · **8,192** · 10,000…).
+- **Pokédex:** los Pokémon de la generación elegida, tomados de [PokéAPI](https://pokeapi.co),
+  con un **interruptor shiny** que cambia todos los sprites entre normal y shiny. Al tocar uno
+  se ven sus tipos, altura, peso, estadísticas base, **su entrada de Pokédex del juego de esa
+  generación** (Crystal, Emerald o Platinum) y el arte normal y shiny lado a lado.
+- **Face-off:** cazar con amigos en tiempo real, en modo **Battle** (todos el mismo Pokémon, gana
+  el primero) o **Lounge** (cada quien el suyo). Ver [Face-off](#face-off-multijugador).
+- **Funciona sin internet:** la Pokédex se guarda en Room después de la primera carga; las cazas
+  individuales nunca necesitan red.
 
-## Face-off (multiplayer)
+## Face-off (multijugador)
 
-> Para jugar con tus compañeros, la guía en español está en
-> [docs/COMO-JUGAR.md](docs/COMO-JUGAR.md).
+Un jugador crea una sala y comparte su código de seis caracteres (o el enlace
+`shinydex://join/CÓDIGO` del botón de compartir). Cualquiera con el código entra desde la
+pestaña **Face-off**. Cada sala admite hasta 8 jugadores y se queda en una sola generación.
 
-One player creates a room and shares its six-character code (or the `shinydex://join/CODE`
-link from the share button). Anyone with the code joins from the **Face-off** tab. Rooms hold
-up to 8 hunters and stay in one generation.
-
-| Mode | Everyone hunts | Ends when | What you see |
+| Modo | Todos cazan | Termina cuando | Qué se ve |
 |---|---|---|---|
-| **Battle** | The Pokémon the host picked | The first player taps **Found it!** — they win, everyone else's counter locks | Standings, and the chance that *someone* has hit it: every encounter from every player pooled into `1 − (1 − 1/d)^(n₁+n₂+…)` |
-| **Lounge** | Their own pick from the room's dex | Every player has found theirs | Standings, found count, combined encounters |
+| **Battle** | El Pokémon que eligió el anfitrión | El primero toca **Found it!**: gana y los contadores de los demás se bloquean | Posiciones y la probabilidad de que *alguien* ya lo haya encontrado, sumando los encuentros de todos: `1 − (1 − 1/d)^(n₁+n₂+…)` |
+| **Lounge** | Cada quien el suyo, de la Pokédex de la sala | Todos encontraron el suyo | Posiciones, cuántos lo encontraron y los encuentros combinados |
 
-Counters sync every two seconds. Milestone messages still fire every 100 of *your* encounters.
+Los contadores se sincronizan cada dos segundos, y los Milestones siguen saliendo cada 100 de
+*tus* encuentros. Las salas las administra un servidor propio hecho en Kotlin con Ktor (módulo
+`server` de este proyecto); viven en memoria y se cierran solas tras 12 horas sin actividad.
 
-### Running it
+### Reglas que valida el servidor
 
-The face-off service is the `:server` module — a small Kotlin/Ktor app in this same project.
+- Cada jugador recibe una llave secreta aleatoria al entrar; solo esa llave puede mover su
+  contador, marcar su shiny o sacarlo de la sala. Las llaves nunca aparecen en lo que ven los
+  demás.
+- Un solo ganador por Battle: el candado de la sala hace imposible un segundo “found” al mismo
+  tiempo.
+- El Pokémon tiene que ser de la generación de la sala; los nombres se limpian y no se pueden
+  repetir; los contadores se mueven máximo ±10 por petición y nunca quedan negativos.
+- Los códigos no usan 0/O ni 1/I para que no se confundan al dictarlos.
 
-```bash
-gradlew :server:run
-```
+## Métodos de caza
 
-It listens on port 8080 (`PORT` overrides it). Then, in the app's Face-off tab, the **Server**
-setting must point at it:
+La probabilidad base es 1 entre 8192 en las tres generaciones. Lo que cambia es qué la mejora.
 
-| Where the app runs | Server address |
-|---|---|
-| Android emulator on the same laptop | `10.0.2.2:8080` (the default) |
-| A phone on the same Wi-Fi | the laptop's LAN IP, e.g. `192.168.1.20:8080` — allow Java through Windows Firewall |
-| Anywhere (deployed) | an `https://` host — release builds refuse plain HTTP |
+**Generación II:** encuentro normal, surf, pesca, árboles con Headbutt, soft reset, bestia
+errante, concurso de bichos, premio del casino, y además:
 
-Everyone in a room must use the same server. Rooms live in memory: restarting the server ends
-the face-offs in progress, and idle rooms expire after 12 hours.
-
-### Rules the server enforces
-
-- Each player gets a random secret token on join; only that token can change their counter,
-  mark their shiny or leave. Tokens are never included in room views.
-- One winner per battle — the room lock makes a simultaneous second "found" impossible.
-- Pokémon must belong to the room's generation; names are sanitised and unique per room;
-  counters move by at most ±10 per call and never go negative.
-- Codes use an alphabet without 0/O or 1/I so they survive being read aloud.
-
-## Hunting methods
-
-Base odds are 1 in 8192 across all three generations. What changes is what beats them.
-
-**Generation II** — Random Encounter, Surfing, Fishing, Headbutt Trees, Soft Reset,
-Roaming Beast, Bug-Catching Contest, Game Corner Prize, plus:
-
-| Method | Odds | Notes |
+| Método | Probabilidad | Notas |
 |---|---|---|
-| Breeding (shiny parent) | 1 / 64 | Shininess comes from DVs, and DVs are inherited |
-| Odd Egg | ~14% | **Crystal only** — the option disappears on Gold and Silver |
-| Red Gyarados | Guaranteed | Scripted shiny at the Lake of Rage |
+| Crianza (padre shiny) | 1 / 64 | Lo shiny depende de los DVs, y los DVs se heredan |
+| Odd Egg | ~14% | **Solo en Crystal**: la opción desaparece en Gold y Silver |
+| Gyarados rojo | Garantizado | Shiny fijo en el Lago de la Furia |
 
-**Generation III** — Random Encounter, Surfing, Fishing, Rock Smash, Safari Zone, Soft
-Reset, Roaming Latias / Latios and Breeding. Every one of them is full odds: Gen III
-dropped DV inheritance and the Masuda Method did not exist yet, so there is no shortcut.
+**Generación III:** encuentro normal, surf, pesca, Rock Smash, Zona Safari, soft reset,
+Latias / Latios errantes y crianza. Todos son 1/8192: la Gen III quitó la herencia de DVs y el
+método Masuda todavía no existía, así que no hay atajo.
 
-**Generation IV** — Random Encounter, Surfing, Fishing, Soft Reset, Honey Tree, Great
-Marsh, Roaming, plus:
+**Generación IV:** encuentro normal, surf, pesca, soft reset, árboles de miel, Gran Pantano,
+errantes, y además:
 
-| Method | Odds | Notes |
+| Método | Probabilidad | Notas |
 |---|---|---|
-| Poké Radar chain | ~1 / 200 | Best odds in Gen IV; caps around a chain of 40 |
-| Masuda Method | 1 / 1638 | Breed parents from games of different languages |
+| Cadena de Poké Radar | ~1 / 200 | La mejor de la Gen IV; con una cadena de 40 |
+| Método Masuda | 1 / 1638 | Criar padres de juegos de distinto idioma |
 
-## Tech stack
+## Tecnologías
 
-| Layer | Choice |
+| Capa | Elección |
 |---|---|
-| Language / UI | Kotlin, Jetpack Compose, Material 3 |
-| Architecture | MVVM — `ViewModel` + `StateFlow`, unidirectional data flow |
-| Dependency injection | Hand-rolled `AppContainer` (four screens do not need Hilt) |
-| Persistence | Room (hunts + Pokédex cache), SharedPreferences (generation, face-off session) |
-| Networking | Retrofit + Gson over a shared, timeout-bounded OkHttp client |
-| Images | Coil 3, reusing the same OkHttp client |
-| Navigation | Navigation Compose, `shinydex://join/CODE` deep link |
-| Face-off server | Ktor 3 (CIO engine) + Gson, in-memory rooms, `:server` module |
-| Build | Gradle 9.5, AGP 9.3.2, Kotlin 2.4.10, KSP, version catalogue |
-
-## Project layout
-
-```
-app/src/main/java/com/espinosa/shinydex/
-├── AppContainer.kt              dependency graph
-├── ShinyDexApp.kt               Application + Coil image loader
-├── data/
-│   ├── local/                   Room entities, DAOs, database, SharedPreferences
-│   ├── model/                   Generation, GameVersion, HuntMethod, Hunt, FaceOff...
-│   ├── remote/                  Retrofit services (PokeAPI + face-off), OkHttp, sprites
-│   └── repo/                    HuntRepository, PokedexRepository, FaceOffRepository
-├── util/                        Odds maths, motivational messages, room codes
-└── ui/
-    ├── MainActivity.kt          single activity
-    ├── ShinyDexRoot.kt          Scaffold + NavHost + bottom bar
-    ├── components/              Poké Ball logo, chips, sprites, milestone dialog
-    ├── screens/                 Generation, Hunts, HuntDetail, AddHunt, Pokedex, FaceOff...
-    ├── theme/                   black / gold / white palette
-    └── viewmodel/               Generation, Hunts, Pokedex and FaceOff ViewModels
-
-server/src/main/kotlin/com/espinosa/shinydex/server/
-├── Application.kt               Ktor routes and error mapping
-├── RoomStore.kt                 every face-off rule, testable without HTTP
-└── Models.kt                    rooms, players and the wire format
-```
+| Lenguaje / interfaz | Kotlin, Jetpack Compose, Material 3 |
+| Arquitectura | MVVM: `ViewModel` + `StateFlow`, flujo de datos en un solo sentido |
+| Inyección de dependencias | `AppContainer` hecho a mano (cuatro pantallas no necesitan Hilt) |
+| Almacenamiento | Room (cazas y caché de la Pokédex), SharedPreferences (generación y sala activa) |
+| Red | Retrofit + Gson sobre un cliente OkHttp compartido y con tiempos límite |
+| Imágenes | Coil 3, usando el mismo cliente OkHttp |
+| Navegación | Navigation Compose, enlace profundo `shinydex://join/CÓDIGO` |
+| Servidor de Face-off | Ktor 3 (motor CIO) + Gson, salas en memoria |
+| Compilación | Gradle 9.5, AGP 9.3.2, Kotlin 2.4.10, KSP, catálogo de versiones |
 
 ---
 
-## Build and run
+## Instalación
 
-1. Open the `ShinyDex` folder in Android Studio (**File → Open**, pick the folder itself).
-2. Let Gradle sync. It uses Android Studio's bundled JDK — nothing to configure.
-3. Pick an emulator or device on API 26+ and press **Run**.
+1. Abrir la carpeta `ShinyDex` en Android Studio (**File → Open** y elegir la carpeta).
+2. Esperar a que Gradle sincronice. Usa el JDK que trae Android Studio; no hay que configurar
+   nada.
+3. Elegir un emulador o celular con Android 8.0 (API 26) o superior y presionar **Run**.
 
-From a terminal:
+Desde una terminal:
 
 ```bash
 gradlew :app:assembleDebug
 ```
 
-The APK lands in `app/build/outputs/apk/debug/app-debug.apk`.
+El APK queda en `app/build/outputs/apk/debug/app-debug.apk`.
 
-### Requirements
+### Requisitos
 
-- Android Studio with **SDK Platform 37** and an API 26+ emulator or device
-- A JDK 21 installation for the `detektSast` task only (see below)
+- Android Studio con **SDK Platform 37** y un emulador o celular con API 26 o superior.
+- Un JDK 21 instalado, solo para la tarea `detektSast` (ver abajo).
 
 ---
 
-## Tests
+## Pruebas
 
 ```bash
 gradlew :app:testDebugUnitTest :server:test
 ```
 
-**60 tests.** The server's 20 cover the face-off rules (one winner per battle, lounge closes
-only when everyone is done, tokens, generation checks, caps, expiry) and the HTTP API end to
-end. The app's 40 cover the shiny probability maths, the milestone logic, the dex ranges and
-sprite eras, which game's Pokédex entry is shown and how its text is cleaned, and the method/generation rules — including that the Odd Egg is Crystal-only,
-that no method leaks into another generation, and that Gen III really has nothing that
-beats full odds — plus room codes, invite links and the pooled battle probability.
+**60 pruebas.** Las 20 del servidor cubren las reglas del Face-off (un ganador por Battle, el
+Lounge solo cierra cuando todos terminan, llaves, validación de generación, límites y
+expiración) y la API completa por HTTP. Las 40 de la app cubren el cálculo de probabilidad, los
+Milestones, los rangos de cada generación y sus sprites, qué entrada de Pokédex se muestra y
+cómo se limpia su texto, y las reglas de métodos por generación: que el Odd Egg sea solo de
+Crystal, que ningún método se pase a otra generación y que la Gen III de verdad no tenga nada
+mejor que 1/8192. También los códigos de sala, los enlaces de invitación y la probabilidad
+combinada de una Battle.
 
-## Security tooling
+## Seguridad
 
-Full write-ups live in [`security/`](security/).
+Los documentos completos están en [`security/`](security/).
 
-| Practice | Tool | Command | Docs |
+| Práctica | Herramienta | Comando | Documento |
 |---|---|---|---|
 | **SAST** | detekt + Android Lint | `gradlew :app:detektSast :app:lintDebug` | [SAST.md](security/SAST.md) |
 | **DAST** | MobSF (+ OWASP ZAP) | `bash security/mobsf-scan.sh <apk>` | [DAST.md](security/DAST.md) |
-| **SCA** | OWASP Dependency-Check | `gradlew -PenableSca=true -PnvdApiKey=<key> :app:dependencyCheckAnalyze` | [SCA.md](security/SCA.md) |
-| **SAC** | Security Assurance Case | — | [SAC.md](security/SAC.md) |
+| **SCA** | OWASP Dependency-Check | `gradlew -PenableSca=true -PnvdApiKey=<llave> :app:dependencyCheckAnalyze` | [SCA.md](security/SCA.md) |
+| **SAC** | Caso de aseguramiento de seguridad | — | [SAC.md](security/SAC.md) |
 
-> **Why `detektSast` and not the detekt Gradle plugin:** the plugin runs detekt inside the
-> Gradle daemon, and detekt 1.23.x cannot parse a Java 25 version string — which is what
-> this project's daemon runs on (`gradle/gradle-daemon-jvm.properties`). The `detektSast`
-> task forks the detekt CLI into its own JDK 21 process instead, so it behaves the same
-> from Android Studio, the terminal and Jenkins. It needs a JDK 21 that Gradle can find.
+> **Por qué `detektSast` y no el plugin de detekt:** el plugin corre detekt dentro del daemon de
+> Gradle, y detekt 1.23.x no reconoce la versión de Java 25, que es con la que corre el daemon
+> de este proyecto (`gradle/gradle-daemon-jvm.properties`). La tarea `detektSast` corre detekt
+> en un proceso aparte con JDK 21, así que funciona igual desde Android Studio, la terminal y
+> Jenkins.
 
-### Security controls built into the app
+### Controles de seguridad dentro de la app
 
-- HTTPS only — cleartext traffic denied in the manifest *and* the network security config
-- Hunt database and preferences excluded from cloud backup and device transfer
-- Exactly two permissions, both `normal` protection level, no dangerous permissions
-- One exported component (the launcher activity)
-- Network logging compiled into debug builds only
-- Release builds minified, resource-shrunk and obfuscated by R8
-- Bounded network timeouts; every API call wrapped in `runCatching`
+- Solo HTTPS: el tráfico sin cifrar está bloqueado en el manifiesto *y* en la configuración de
+  seguridad de red.
+- La base de datos y las preferencias están excluidas de los respaldos en la nube y de la
+  transferencia entre dispositivos.
+- Solo dos permisos, ambos de nivel `normal`; ningún permiso peligroso.
+- Un solo componente exportado (la actividad principal).
+- El registro de tráfico de red solo existe en las versiones de prueba.
+- La versión final se comprime, se reduce y se ofusca con R8.
+- Tiempos límite en la red; cada llamada a una API está envuelta en `runCatching`.
 
-## CI — Jenkins
+## CI con Jenkins
 
-[`Jenkinsfile`](Jenkinsfile) defines a declarative pipeline:
+El [`Jenkinsfile`](Jenkinsfile) define un pipeline declarativo:
 
 ```
-Checkout → Build → Unit tests → SAST → SCA → DAST → Package
+Checkout → Build → Pruebas → SAST → SCA → DAST → Package
 ```
 
-SAST runs on every build and publishes detekt + Lint SARIF through the Warnings-NG plugin.
-SCA and DAST are gated behind the `RUN_SCA` and `RUN_DAST` job parameters because they need
-an NVD API key and a MobSF server respectively. The agent needs JDK 17 or 21, an Android
-SDK with platform 37, and accepted SDK licences.
+SAST corre en cada build y publica los resultados de detekt y Lint (SARIF) con el plugin
+Warnings-NG. SCA y DAST se activan con los parámetros `RUN_SCA` y `RUN_DAST`, porque necesitan
+una llave de NVD y un servidor MobSF. El agente necesita JDK 17 o 21, el SDK de Android con la
+plataforma 37 y las licencias del SDK aceptadas.
 
 ---
 
-## Roadmap
+## Limitaciones y mejoras
 
-- [ ] Chain counter for the Poké Radar, separate from the encounter counter
-- [ ] Generation V and beyond
-- [ ] Per-hunt notes and a "caught on" date
-- [ ] Export / import hunts as JSON
-- [ ] Instrumented Compose UI tests in CI
-- [ ] Automate the MobSF dynamic scan in the pipeline
+Limitaciones de esta versión:
 
-## Credits
+- Las salas de Face-off viven en la memoria del servidor: si se reinicia, se pierden.
+- El servidor no está publicado en internet.
+- No hay cuentas de usuario.
+- Reiniciar el contador o borrar una caza todavía no pide confirmación.
+- SCA y DAST están configurados, pero se ejecutan a mano porque necesitan servicios externos.
 
-Pokémon data and sprites come from [PokéAPI](https://pokeapi.co), which is free and
-unauthenticated. Pokémon is a trademark of Nintendo / Game Freak / The Pokémon Company;
-this is a non-commercial student project and is not affiliated with them.
+Mejoras siguientes:
+
+- [ ] Publicar el servidor en internet con HTTPS
+- [ ] Contador de cadena para el Poké Radar, separado del de encuentros
+- [ ] Generación V en adelante
+- [ ] Notas por caza y fecha de captura
+- [ ] Exportar e importar cazas en JSON
+- [ ] Pruebas de interfaz automáticas en el pipeline
+- [ ] Automatizar el escaneo dinámico de MobSF en el pipeline
+
+## Créditos
+
+Los datos y sprites de los Pokémon vienen de [PokéAPI](https://pokeapi.co), que es gratuita y no
+requiere autenticación. Pokémon es marca de Nintendo / Game Freak / The Pokémon Company; este es
+un proyecto escolar sin fines de lucro y no tiene relación con ellos.

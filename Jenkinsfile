@@ -1,13 +1,13 @@
-// ShinyDex CI pipeline.
+// Pipeline de CI de ShinyDex.
 //
-// Stages: build -> unit tests -> SAST -> SCA -> DAST -> package.
-// The SCA and DAST stages are opt-in through job parameters because they need external
-// services (the NVD feed and a MobSF server respectively).
+// Etapas: build -> pruebas unitarias -> SAST -> SCA -> DAST -> package.
+// SCA y DAST se activan con parámetros del job porque necesitan servicios externos
+// (la base de datos NVD y un servidor MobSF).
 //
-// Agent requirements:
-//   - a JDK 21 installation Gradle can discover (the detektSast task forks onto it)
-//   - ANDROID_HOME pointing at an SDK with platform 37 and build-tools installed
-//   - the Android SDK licences accepted (sdkmanager --licenses)
+// Requisitos del agente:
+//   - un JDK 21 que Gradle pueda encontrar (la tarea detektSast corre sobre él)
+//   - ANDROID_HOME apuntando a un SDK con la plataforma 37 y build-tools instalados
+//   - las licencias del SDK de Android aceptadas (sdkmanager --licenses)
 
 def sh_(String command) {
     if (isUnix()) {
@@ -34,12 +34,12 @@ pipeline {
         booleanParam(
             name: 'RUN_SCA',
             defaultValue: false,
-            description: 'Run OWASP Dependency-Check (needs NVD_API_KEY credential).'
+            description: 'Corre OWASP Dependency-Check (necesita la credencial NVD_API_KEY).'
         )
         booleanParam(
             name: 'RUN_DAST',
             defaultValue: false,
-            description: 'Run the MobSF dynamic scan (needs a reachable MobSF server).'
+            description: 'Corre el escaneo dinámico de MobSF (necesita un servidor MobSF).'
         )
     }
 
@@ -63,7 +63,7 @@ pipeline {
 
         stage('Unit tests') {
             steps {
-                // App logic plus the face-off server's room rules and HTTP API.
+                // Lógica de la app, reglas de las salas de Face-off y su API HTTP.
                 gradlew(':app:testDebugUnitTest :server:test')
             }
             post {
@@ -77,9 +77,9 @@ pipeline {
 
         stage('SAST') {
             steps {
-                // detekt over the app and the server, forked onto JDK 21 (see app/build.gradle.kts).
+                // detekt sobre la app y el servidor, en un proceso con JDK 21 (ver app/build.gradle.kts).
                 gradlew(':app:detektSast')
-                // Android Lint: platform-specific static analysis, emits SARIF for Jenkins.
+                // Android Lint: análisis estático propio de Android; genera SARIF para Jenkins.
                 gradlew(':app:lintDebug')
             }
             post {
@@ -147,7 +147,7 @@ pipeline {
 
     post {
         always {
-            echo "ShinyDex pipeline finished with status: ${currentBuild.currentResult}"
+            echo "Pipeline de ShinyDex terminado con estado: ${currentBuild.currentResult}"
         }
     }
 }

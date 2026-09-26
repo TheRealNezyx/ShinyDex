@@ -25,3 +25,7 @@ security/reports/
 # OS
 .DS_Store
 Thumbs.db
+
+# Solo local: guías para correr el servidor en el salón
+docs/COMO-JUGAR.md
+server/mostrar-ip.bat

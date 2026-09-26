@@ -1,9 +1,9 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-// ShinyDex face-off server: the small room service that lets several phones share a hunt.
+// Servidor de Face-off de ShinyDex: el servicio de salas que permite a varios celulares
+// compartir una caza.
 //
-//   gradlew :server:run      starts it on http://0.0.0.0:8080 (PORT overrides the port)
-//   gradlew :server:test     runs the room-logic and HTTP tests
+//   gradlew :server:test     corre las pruebas de las reglas de las salas y de la API HTTP
 plugins {
     alias(libs.plugins.kotlin.jvm)
     application

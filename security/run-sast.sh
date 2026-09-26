@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Runs the full SAST suite (detekt + Android Lint).
+# Corre todo el SAST (detekt + Android Lint).
 #
-# detekt is executed by the `detektSast` task, which forks its own JDK 21 process, so this
-# works no matter which JVM the Gradle daemon is on.
+# detekt corre con la tarea `detektSast`, que usa su propio proceso con JDK 21, así que
+# funciona sin importar con qué JVM corra el daemon de Gradle.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."

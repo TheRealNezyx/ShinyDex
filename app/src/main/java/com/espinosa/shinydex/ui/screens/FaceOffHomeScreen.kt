@@ -147,8 +147,8 @@ fun FaceOffHomeScreen(
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = "Emulator: 10.0.2.2:8080. A phone on the same Wi-Fi: the laptop's IP, " +
-                        "for example 192.168.1.20:8080. Everyone in a room must use the same server.",
+                    text = "Ask the room's host for the server address. " +
+                        "Everyone in a room must use the same server.",
                     style = MaterialTheme.typography.bodySmall,
                     color = Muted,
                 )

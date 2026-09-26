@@ -1,4 +1,4 @@
-# Uploads an APK to a running MobSF server and downloads the static + dynamic report.
+# Sube un APK a un servidor MobSF y descarga el reporte estático y dinámico.
 #
 #   $env:MOBSF_API_KEY = "..."
 #   powershell -File security\mobsf-scan.ps1 -Apk app\build\outputs\apk\debug\app-debug.apk

@@ -1,160 +1,162 @@
-# SAC — Security Assurance Case
+# SAC: caso de aseguramiento de seguridad
 
-A *security assurance case* is a structured argument that an application is acceptably
-secure for its purpose, built out of **claims**, the **argument** for each claim, and the
-**evidence** that supports it. It is what ties the SAST, DAST and SCA results together
-into a statement someone can actually review.
+Un *caso de aseguramiento de seguridad* es un argumento ordenado de que una aplicación es
+suficientemente segura para su propósito. Se arma con **afirmaciones**, el **argumento** de cada
+una y la **evidencia** que la respalda. Es lo que une los resultados de SAST, DAST y SCA en algo
+que alguien puede revisar.
 
-> If "SAC" in your brief means **Software Composition Analysis**, that is covered
-> separately in [`SCA.md`](SCA.md). Both are delivered.
+> Si en tu materia “SAC” significa **Software Composition Analysis**, eso está en
+> [`SCA.md`](SCA.md). Se entregan los dos.
 
 ---
 
-## System description
+## Descripción del sistema
 
 | | |
 |---|---|
-| Application | ShinyDex 0.1.0 (`com.espinosa.shinydex`) |
-| Platform | Android 8.0 (API 26) and above |
-| Purpose | Track shiny hunts for Generations II–IV, browse each generation's Pokedex, and hunt together in face-off rooms |
-| Users | A local user; in face-off rooms, up to 8 players identified only by a chosen display name. No accounts, no sign-in |
-| External services | PokeAPI and its sprite CDN (read-only, public), and the ShinyDex face-off server (`:server` module, self-hosted) |
-| Data stored | Hunt records (species, game, method, counter) in a private Room database; the selected generation in private SharedPreferences |
-| Data transmitted | Solo hunts: nothing. Face-off: display name, chosen Pokemon and method, and encounter counts — sent only to the configured face-off server |
+| Aplicación | ShinyDex 0.1.0 (`com.espinosa.shinydex`) |
+| Plataforma | Android 8.0 (API 26) o superior |
+| Propósito | Llevar cazas shiny de las generaciones II a IV, consultar la Pokédex de cada generación y cazar en grupo en salas de Face-off |
+| Usuarios | Un usuario local; en las salas de Face-off, hasta 8 jugadores identificados solo por el nombre que eligen. Sin cuentas ni inicio de sesión |
+| Servicios externos | PokéAPI y su repositorio de sprites (solo lectura, públicos) y el servidor de Face-off de ShinyDex (módulo `server`, propio) |
+| Datos guardados | Cazas (Pokémon, juego, método, contador) en una base Room privada; la generación elegida y la sala activa en SharedPreferences privadas |
+| Datos enviados | Cazas individuales: nada. Face-off: nombre, Pokémon y método elegidos y los encuentros, solo al servidor de Face-off configurado |
 
-## Assets and what could go wrong
+## Activos y qué puede salir mal
 
-| Asset | Threat | Impact |
+| Activo | Amenaza | Impacto |
 |---|---|---|
-| Hunt counters | Loss or corruption | Low — annoying, not harmful |
-| Hunt counters | Read by another app | Low — not sensitive, but still private to the user |
-| Network traffic | Interception / tampering (MITM) | Medium — poisoned Pokedex data or sprite payloads |
-| The device | Malicious payload delivered through a compromised dependency | High |
-| The app itself | Reverse engineering / repackaging | Low — nothing worth stealing, no secrets |
+| Contadores de cazas | Pérdida o corrupción | Bajo: molesto, no dañino |
+| Contadores de cazas | Que otra app los lea | Bajo: no son sensibles, pero son privados del usuario |
+| Tráfico de red | Intercepción o alteración (MITM) | Medio: datos de Pokédex o sprites alterados |
+| El dispositivo | Código malicioso a través de una dependencia comprometida | Alto |
+| La app | Ingeniería inversa o reempaquetado | Bajo: no hay nada que robar ni secretos |
 
-Note what is *absent*: no credentials, no payment data, no personal information, no
-location, no camera, no contacts, no background services, no user-generated content shared
-with anyone. Most of the mobile attack surface is missing by design, and that is itself the
-strongest part of this assurance case.
+Lo que *no* está: no hay credenciales, pagos, información personal, ubicación, cámara,
+contactos, servicios en segundo plano ni contenido del usuario compartido con otros. La mayor
+parte de la superficie de ataque de una app móvil no existe por diseño, y eso es lo más fuerte
+de este caso.
 
 ---
 
-## Claim 1 — Network traffic cannot be intercepted or downgraded
+## Afirmación 1: el tráfico de red no se puede interceptar ni degradar
 
-**Argument.** All traffic uses HTTPS with the system trust store and default certificate
-validation. Cleartext HTTP is denied at the platform level, so it cannot be reintroduced by
-a code change without also changing the manifest and the network config.
+**Argumento.** Todo el tráfico a PokéAPI usa HTTPS con los certificados del sistema y la
+validación normal. El HTTP sin cifrar está bloqueado a nivel de plataforma, así que un cambio de
+código no puede reactivarlo sin cambiar también el manifiesto y la configuración de red.
 
-**Evidence.**
+**Evidencia.**
 - `AndroidManifest.xml`: `android:usesCleartextTraffic="false"`
-- `res/xml/network_security_config.xml`: `cleartextTrafficPermitted="false"` in the base
-  config and in the per-domain config
-- `data/remote/ApiClient.kt`: the base URL is hard-coded to `https://pokeapi.co/api/v2/`
-- Coil is constructed with the same OkHttp client, so sprite loading inherits the policy
+- `res/xml/network_security_config.xml`: `cleartextTrafficPermitted="false"` en la configuración
+  base y en la de dominios
+- `data/remote/ApiClient.kt`: la dirección base está fija en `https://pokeapi.co/api/v2/`
+- Coil usa el mismo cliente OkHttp, así que la carga de sprites hereda la política
   (`ShinyDexApp.newImageLoader`)
-- DAST: with a ZAP proxy in front of the app and its CA *not* trusted, every request fails
-  — see [`DAST.md`](DAST.md) §2
+- Procedimiento de verificación con ZAP: [`DAST.md`](DAST.md), sección 2
 
-## Claim 2 — Local data stays local
+## Afirmación 2: los datos locales se quedan en el dispositivo
 
-**Argument.** Room writes to the app's private data directory, SharedPreferences uses
-`MODE_PRIVATE`, and both are excluded from cloud backup and device transfer. No content
-provider, no exported service, and no external-storage permission exists to read them out.
+**Argumento.** Room escribe en la carpeta privada de la app, SharedPreferences usa
+`MODE_PRIVATE`, y ambos están excluidos de los respaldos en la nube y de la transferencia entre
+dispositivos. No hay proveedor de contenido, servicio exportado ni permiso de almacenamiento
+externo por donde sacarlos.
 
-**Evidence.**
-- `AndroidManifest.xml`: `android:allowBackup="false"`, no storage permissions
-- `res/xml/data_extraction_rules.xml`: `database` and `sharedpref` domains excluded from
-  both `cloud-backup` and `device-transfer`
+**Evidencia.**
+- `AndroidManifest.xml`: `android:allowBackup="false"`, sin permisos de almacenamiento
+- `res/xml/data_extraction_rules.xml`: los dominios `database` y `sharedpref` excluidos de
+  `cloud-backup` y `device-transfer`
 - `data/local/SettingsStore.kt`: `Context.MODE_PRIVATE`
-- Only one exported component exists (`MainActivity`, the launcher)
-- DAST: MobSF file analysis confirms the database path is under
-  `/data/data/com.espinosa.shinydex/`
+- Solo existe un componente exportado (`MainActivity`, la pantalla de inicio)
 
-## Claim 3 — The app requests only the privileges it needs
+## Afirmación 3: la app pide solo los privilegios que necesita
 
-**Argument.** Two permissions are declared, both in the `normal` protection level, and both
-are required for the Pokedex to function. No dangerous permission is requested, so no
-runtime permission prompt exists to be abused.
+**Argumento.** Se declaran dos permisos, ambos de nivel `normal`, y los dos se necesitan para
+la Pokédex y el Face-off. No se pide ningún permiso peligroso, así que no existe ningún aviso de
+permisos que se pueda abusar.
 
-**Evidence.** `AndroidManifest.xml` declares exactly `INTERNET` and `ACCESS_NETWORK_STATE`.
+**Evidencia.** `AndroidManifest.xml` declara exactamente `INTERNET` y `ACCESS_NETWORK_STATE`.
 
-## Claim 4 — Release builds leak nothing through logs or symbols
+## Afirmación 4: la versión final no filtra nada por logs ni símbolos
 
-**Argument.** HTTP logging is compiled in only for debug builds, and release builds are
-minified, resource-shrunk and obfuscated by R8.
+**Argumento.** El registro de tráfico HTTP solo se compila en las versiones de prueba, y la
+versión final se comprime, se reduce y se ofusca con R8.
 
-**Evidence.**
-- `data/remote/ApiClient.kt`: the logging interceptor is inside an `if (BuildConfig.DEBUG)`
-  guard, so it is removed from release bytecode
-- `app/build.gradle.kts`: `isMinifyEnabled = true`, `isShrinkResources = true` on release
-- `app/proguard-rules.pro` keeps only what reflection genuinely needs
+**Evidencia.**
+- `data/remote/ApiClient.kt`: el interceptor de registro está dentro de un
+  `if (BuildConfig.DEBUG)`, así que se elimina del código de la versión final
+- `app/build.gradle.kts`: `isMinifyEnabled = true`, `isShrinkResources = true` en release
+- `app/proguard-rules.pro` conserva solo lo que la reflexión realmente necesita
 
-## Claim 5 — Untrusted input cannot corrupt the app
+## Afirmación 5: la información externa no puede corromper la app
 
-**Argument.** The only external input is PokeAPI JSON. It is parsed by Gson into fixed,
-non-polymorphic data classes with defaulted fields, so a malformed or hostile response
-produces empty values rather than a crash or an injection. Every network call is wrapped in
-`runCatching` and surfaces as a UI error state.
+**Argumento.** La información externa es JSON de PokéAPI y del servidor de Face-off. Gson la
+convierte en clases de datos fijas con valores por defecto, así que una respuesta mal formada u
+hostil produce valores vacíos en lugar de un cierre o una inyección. Cada llamada de red está
+envuelta en `runCatching` y se convierte en un mensaje de error en pantalla.
 
-**Evidence.**
-- `data/remote/dto/PokeApiDtos.kt`: plain data classes, every field defaulted
-- `data/repo/PokedexRepository.kt`: `runCatching` around both API calls
-- `ui/viewmodel/PokedexViewModel.kt`: failures become `DetailState.Failed` / an error banner
-- Room writes go through parameterised DAO queries; there is no raw SQL string building
-- Counter arithmetic is clamped (`coerceAtLeast(0)`) in `HuntRepository.adjustEncounters`
+**Evidencia.**
+- `data/remote/dto/PokeApiDtos.kt`: clases de datos simples, todos los campos con valor por
+  defecto
+- `data/repo/PokedexRepository.kt` y `FaceOffRepository.kt`: `runCatching` alrededor de las
+  llamadas
+- `data/model/FaceOff.kt`: una sala con modo o generación desconocidos se rechaza
+- Room usa consultas parametrizadas en los DAO; no se arma SQL con texto
+- El contador está limitado (`coerceAtLeast(0)`) en `HuntRepository.adjustEncounters`
 
-## Claim 6 — Known-vulnerable dependencies are detected before release
+## Afirmación 6: las dependencias vulnerables se detectan antes de publicar
 
-**Argument.** Dependencies are pinned in one version catalogue and scanned against the NVD
-by OWASP Dependency-Check, gated at CVSS 7.0.
+**Argumento.** Las dependencias están fijadas en un solo catálogo de versiones y se revisan
+contra la NVD con OWASP Dependency-Check, con un corte en CVSS 7.0.
 
-**Evidence.** [`SCA.md`](SCA.md), `security/sca.gradle.kts`, and the Jenkins **SCA** stage.
+**Evidencia.** [`SCA.md`](SCA.md), `security/sca.gradle.kts` y la etapa **SCA** de Jenkins.
 
-## Claim 7 — Security checks run on every build, not just when someone remembers
+## Afirmación 7: las revisiones de seguridad corren en cada build, no cuando alguien se acuerda
 
-**Argument.** The Jenkins pipeline runs SAST on every commit and SCA/DAST on demand, and
-each stage archives its report as a build artifact.
+**Argumento.** El pipeline de Jenkins corre SAST en cada commit y SCA/DAST bajo demanda, y cada
+etapa guarda su reporte como artefacto del build.
 
-**Evidence.** [`../Jenkinsfile`](../Jenkinsfile), [`SAST.md`](SAST.md).
+**Evidencia.** [`../Jenkinsfile`](../Jenkinsfile), [`SAST.md`](SAST.md).
 
----
+## Afirmación 8: en un Face-off nadie puede jugar por otro
 
-## Claim 8 — In a face-off, nobody can play for someone else
+**Argumento.** Al entrar a una sala, cada jugador recibe una llave aleatoria de 72 caracteres
+que solo existe en su dispositivo y en la memoria del servidor. Cada cambio (encuentros,
+“found”, salir) tiene que traerla, y el servidor identifica al jugador por la llave, nunca por
+un identificador que mande el cliente. Lo que ven los demás jugadores nunca incluye llaves. El
+servidor valida toda la información: modo, generación, rango de la Pokédex, caracteres y largo
+del nombre, largo del método, rango de probabilidad y un tope de ±10 por cambio de contador.
 
-**Argument.** Joining a room returns a random 72-character token that exists only on that
-device and in server memory. Every write (encounters, found, leave) must carry it, and the
-server resolves the player from the token, never from a client-supplied id. Room views
-returned to other players contain no tokens. All input is validated server-side: mode,
-generation, dex range, name characters and length, method length, odds range, and a ±10 cap
-per counter change.
-
-**Evidence.**
+**Evidencia.**
 - `server/.../RoomStore.kt`: `playerOrFail`, `cleanName`, `cleanPick`, `MAX_STEP`
 - `RoomStoreTest`: `a player can only change their own counter`, `views never contain tokens`,
   `encounter steps are bounded...`, `names are sanitised...`, `invalid creation input is rejected`
 - `ApplicationTest`: `mutations without a token are refused`, `malformed JSON is a clean 400
   with no internals`
-- Invite links: `FaceOffCodes.codeFromLink` accepts only a well-formed code from the
-  `shinydex://join/` scheme (`FaceOffTest`)
+- Enlaces de invitación: `FaceOffCodes.codeFromLink` solo acepta un código bien formado del
+  esquema `shinydex://join/` (`FaceOffTest`)
 
-## Residual risks (accepted for this release)
+## Riesgos residuales (aceptados para esta versión)
 
-| Risk | Why it is accepted |
+| Riesgo | Por qué se acepta |
 |---|---|
-| No certificate pinning | The app talks to a public, unauthenticated, read-only API. Pinning would add breakage risk (certificate rotation) with no confidentiality benefit — there is nothing secret in a Pokedex response. |
-| Database not encrypted at rest | Hunt counters are not sensitive, and Android already encrypts the device's user data partition. SQLCipher would add a native dependency for no meaningful gain. |
-| Debug APK is debuggable | Expected and required for development. Release builds are not debuggable. |
-| Face-off over plain HTTP in debug | Debug builds allow cleartext (`src/debug/res/xml/network_security_config.xml`) so a laptop server works during development. Release builds do not include that file and require an HTTPS server. |
-| No face-off rate limiting or accounts | Rooms are short-lived, capped at 8 players and 500 rooms, and a code is required to see one. Accounts would be the next step for a public deployment. |
-| Dynamic analysis is manual | MobSF dynamic analysis needs an instrumented VM; automating it is future work. Static MobSF analysis is scripted. |
+| Sin certificate pinning | La app habla con una API pública, sin autenticación y de solo lectura. El pinning agregaría riesgo de fallas (rotación de certificados) sin beneficio de confidencialidad: una respuesta de la Pokédex no tiene nada secreto. |
+| Base de datos sin cifrar | Los contadores no son sensibles, y Android ya cifra la partición de datos del usuario. SQLCipher agregaría una dependencia nativa sin ganancia real. |
+| El APK de prueba es depurable | Es lo esperado y necesario para desarrollar. La versión final no es depurable. |
+| Face-off por HTTP sin cifrar en la versión de prueba | La versión de prueba permite HTTP (`src/debug/res/xml/network_security_config.xml`) para que funcione un servidor en red local. La versión final no incluye ese archivo y exige un servidor con HTTPS. |
+| Face-off sin límite de peticiones ni cuentas | Las salas duran poco, tienen tope de 8 jugadores y 500 salas, y se necesita el código para verlas. Las cuentas serían el siguiente paso para publicarlo. |
+| El análisis dinámico es manual | El análisis dinámico de MobSF necesita una máquina virtual instrumentada; automatizarlo queda pendiente. |
 
-## Verification log
+## Registro de verificación
 
-| Date | Version | Check | Result |
+| Fecha | Versión | Revisión | Resultado |
 |---|---|---|---|
-| 2026-08-27 | 0.1.0 | `gradlew :app:detekt` | Pass — 0 findings |
-| 2026-08-27 | 0.1.0 | `gradlew :app:lintDebug` | Pass — no errors |
-| 2026-08-27 | 0.1.0 | `gradlew :app:testDebugUnitTest` | Pass — 17 tests |
-| 2026-08-27 | 0.1.0 | Manual run on API 36 emulator | Pass — full hunt flow, Pokedex, milestone |
-| _pending_ | 0.1.0 | MobSF static + dynamic | Run before the final submission |
-| _pending_ | 0.1.0 | OWASP Dependency-Check | Run once an NVD API key is available |
+| 2026-08-27 | 0.1.0 | `gradlew :app:detekt` | Pasa: 0 hallazgos |
+| 2026-08-27 | 0.1.0 | `gradlew :app:lintDebug` | Pasa: sin errores |
+| 2026-08-27 | 0.1.0 | `gradlew :app:testDebugUnitTest` | Pasa: 17 pruebas |
+| 2026-08-27 | 0.1.0 | Prueba manual en emulador API 36 | Pasa: flujo completo de caza, Pokédex y Milestone |
+| 2026-09-23 | 0.1.0 | `gradlew :app:detektSast` (app y servidor) | Pasa: 0 hallazgos (16 corregidos en el código de Face-off) |
+| 2026-09-23 | 0.1.0 | `gradlew :app:lintDebug` | Pasa: sin errores |
+| 2026-09-23 | 0.1.0 | Prueba manual en emulador API 36 | Pasa: entrada de Pokédex en el detalle |
+| 2026-09-25 | 0.1.0 | `gradlew :app:testDebugUnitTest :server:test` | Pasa: 60 pruebas |
+| _pendiente_ | 0.1.0 | MobSF estático y dinámico | Requiere un servidor MobSF |
+| _pendiente_ | 0.1.0 | OWASP Dependency-Check | Requiere una llave de la NVD |

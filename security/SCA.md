@@ -1,64 +1,62 @@
-# SCA — Software Composition Analysis
+# SCA: análisis de composición de software
 
-SAST looks at code *you* wrote. SCA looks at the code you *imported*: third-party
-libraries, their transitive dependencies, and the known vulnerabilities (CVEs) published
-against them. For an Android app the dependency tree is far larger than the app itself, so
-this is not an optional check.
+SAST revisa el código que *yo* escribí. SCA revisa el código que *importé*: las librerías de
+terceros, sus dependencias y las vulnerabilidades conocidas (CVE) publicadas contra ellas. En
+una app de Android el árbol de dependencias es mucho más grande que la app misma, así que esta
+revisión no es opcional.
 
-## Tool: OWASP Dependency-Check
+## Herramienta: OWASP Dependency-Check
 
 | | |
 |---|---|
-| Config | [`security/sca.gradle.kts`](sca.gradle.kts) |
-| Command | `gradlew -PenableSca=true -PnvdApiKey=<key> :app:dependencyCheckAnalyze` |
-| Reports | `app/build/reports/dependency-check-report.{html,json}` |
-| Gate | `failBuildOnCVSS = 7.0` — any High or Critical CVE fails the build |
+| Configuración | [`security/sca.gradle.kts`](sca.gradle.kts) |
+| Comando | `gradlew -PenableSca=true -PnvdApiKey=<llave> :app:dependencyCheckAnalyze` |
+| Reportes | `app/build/reports/dependency-check-report.{html,json}` |
+| Criterio | `failBuildOnCVSS = 7.0`: cualquier CVE alto o crítico hace fallar el build |
 
-Dependency-Check is **opt-in** (`-PenableSca=true`). It downloads a local mirror of the
-National Vulnerability Database on first run, which takes several minutes and now needs a
-free API key from <https://nvd.nist.gov/developers/request-an-api-key>. Keeping it off the
-default path means a normal build or an IDE sync never waits on it.
+Dependency-Check se **activa a propósito** (`-PenableSca=true`). La primera vez descarga una
+copia local de la National Vulnerability Database, lo que tarda varios minutos y requiere una
+llave gratuita de <https://nvd.nist.gov/developers/request-an-api-key>. Dejarlo fuera del
+camino normal hace que un build o una sincronización del IDE nunca tengan que esperarlo.
 
-In Jenkins it runs in the **SCA** stage when the `RUN_SCA` job parameter is checked, with
-the key supplied by the `NVD_API_KEY` credential.
+En Jenkins corre en la etapa **SCA** cuando se marca el parámetro `RUN_SCA`, y la llave sale de
+la credencial `NVD_API_KEY` (nunca se guarda en el repositorio).
 
-## Reviewing the dependency tree by hand
+## Revisar el árbol de dependencias a mano
 
 ```bash
 gradlew :app:dependencies --configuration releaseRuntimeClasspath
 ```
 
-## ShinyDex's dependency surface
+## Las dependencias de ShinyDex
 
-The app deliberately keeps a small, mainstream dependency set — every extra library is
-extra attack surface and one more thing to patch.
+La app usa a propósito pocas librerías y todas muy conocidas: cada librería extra es más
+superficie de ataque y una cosa más que actualizar.
 
-| Dependency | Why it is here | Risk notes |
+| Dependencia | Para qué está | Notas de riesgo |
 |---|---|---|
-| Jetpack Compose + Material 3 | UI toolkit | First-party AndroidX; version-aligned by the Compose BOM |
-| AndroidX Room | Local hunt database | First-party AndroidX; no network exposure |
-| AndroidX Navigation Compose | Screen routing | First-party AndroidX |
-| Retrofit + Gson converter | PokeAPI client | Widely audited; Gson only parses responses from a fixed HTTPS host |
-| OkHttp logging-interceptor | Request logging | **Debug builds only** — guarded by `BuildConfig.DEBUG` |
-| Coil 3 | Sprite loading | Shares the hardened OkHttp client rather than building its own |
+| Jetpack Compose + Material 3 | Interfaz | AndroidX oficial; versiones alineadas por el BOM de Compose |
+| AndroidX Room | Base de datos local de cazas | AndroidX oficial; sin exposición a la red |
+| AndroidX Navigation Compose | Navegación entre pantallas | AndroidX oficial |
+| Retrofit + convertidor Gson | Cliente de PokéAPI y de Face-off | Muy auditada; Gson solo lee respuestas de servidores fijos |
+| OkHttp logging-interceptor | Registro de peticiones | **Solo en versiones de prueba**, protegido con `BuildConfig.DEBUG` |
+| Coil 3 | Carga de sprites | Usa el mismo cliente OkHttp seguro en lugar de crear el suyo |
 
-Notes for the review:
+Notas para la revisión:
 
-- There is no authentication, no payment path and no user account, so a compromised
-  dependency cannot leak credentials — there are none to leak.
-- Gson deserialises only into the plain data classes in `data/remote/dto/`, and only from
-  `https://pokeapi.co`. No polymorphic or reflective type resolution is enabled.
-- The Compose BOM pins every Compose artifact to one tested set of versions, which removes
-  a whole class of "mixed versions" bugs.
+- No hay inicio de sesión, pagos ni cuentas de usuario, así que una dependencia comprometida no
+  puede filtrar credenciales: no hay ninguna.
+- Gson solo convierte a las clases de datos simples de `data/remote/dto/` y
+  `data/remote/faceoff/`. No hay resolución polimórfica ni por reflexión de tipos.
+- El BOM de Compose fija todas las librerías de Compose en un solo conjunto de versiones
+  probado, lo que elimina los errores por mezclar versiones.
 
-## Keeping dependencies current
+## Mantener las dependencias al día
 
-Versions live in one place, [`gradle/libs.versions.toml`](../gradle/libs.versions.toml), so
-patching is a single-file change. Check for updates with:
+Las versiones viven en un solo lugar, [`gradle/libs.versions.toml`](../gradle/libs.versions.toml),
+así que actualizar es un cambio en un solo archivo.
 
-```bash
-gradlew dependencyUpdates
-```
+## Estado
 
-(that task needs the Ben Manes versions plugin; it is not applied by default for the same
-build-speed reason as Dependency-Check.)
+Configurado y documentado. Todavía no se ha ejecutado contra la NVD porque requiere la llave;
+queda pendiente en el registro de [`SAC.md`](SAC.md).
